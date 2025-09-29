@@ -18,7 +18,13 @@ const guestsService = {
 async create(guestData) {
     await new Promise(resolve => setTimeout(resolve, 500))
     const newId = Math.max(...guestsData.map(guest => guest.Id)) + 1
-    const newGuest = { ...guestData, Id: newId }
+    const newGuest = { 
+      ...guestData, 
+      Id: newId,
+      preferences: {},
+      vipStatus: false,
+      stayHistory: []
+    }
     guestsData.push(newGuest)
 
     // Send welcome email asynchronously (non-blocking)
@@ -38,8 +44,9 @@ async create(guestData) {
       })
 
       const result = await apperClient.functions.invoke(import.meta.env.VITE_SEND_WELCOME_EMAIL, {
-        body: JSON.stringify({
-          name: guestData.name,
+body: JSON.stringify({
+          firstName: guestData.firstName,
+          lastName: guestData.lastName,
           email: guestData.email
         }),
         headers: {

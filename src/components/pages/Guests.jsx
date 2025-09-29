@@ -17,8 +17,9 @@ const Guests = () => {
   const [searchTerm, setSearchTerm] = useState("")
 const [selectedGuest, setSelectedGuest] = useState(null)
   const [showModal, setShowModal] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
+const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     address: ''
@@ -43,8 +44,8 @@ const [selectedGuest, setSelectedGuest] = useState(null)
   if (loading) return <Loading />
   if (error) return <Error message={error} onRetry={loadGuests} />
 
-  const filteredGuests = guests.filter(guest => 
-    `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+const filteredGuests = guests.filter(guest => 
+    `${guest.firstName || ''} ${guest.lastName || ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     guest.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     guest.phone.includes(searchTerm)
   )
@@ -244,7 +245,7 @@ actionLabel={guests.length === 0 ? "Add Guest" : "Clear Search"}
                 try {
                   const newGuest = await guestsService.create(formData)
                   await loadGuests()
-                  setFormData({ name: '', email: '', phone: '', address: '' })
+                  setFormData({ firstName: '', lastName: '', email: '', phone: '', address: '' })
                   setShowModal(false)
                   toast.success('Guest added successfully! Welcome email sent to ' + formData.email)
                 } catch (error) {
@@ -252,12 +253,20 @@ actionLabel={guests.length === 0 ? "Add Guest" : "Clear Search"}
                 }
               }}>
                 <div className="space-y-4">
-                  <FormField
-                    label="Full Name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+<FormField
+                    label="First Name"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     required
-                    placeholder="Enter guest's full name"
+                    placeholder="Enter guest's first name"
+                  />
+                  
+                  <FormField
+                    label="Last Name"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    required
+                    placeholder="Enter guest's last name"
                   />
                   
                   <FormField
@@ -287,7 +296,7 @@ actionLabel={guests.length === 0 ? "Add Guest" : "Clear Search"}
                 </div>
                 
                 <div className="flex gap-3 mt-6">
-                  <Button
+<Button
                     type="button"
                     variant="outline"
                     className="flex-1"
@@ -299,7 +308,7 @@ actionLabel={guests.length === 0 ? "Add Guest" : "Clear Search"}
                     type="submit"
                     variant="primary"
                     className="flex-1"
-                    disabled={!formData.name || !formData.email || !formData.phone}
+                    disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone}
                   >
                     Add Guest
                   </Button>
