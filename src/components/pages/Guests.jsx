@@ -15,8 +15,14 @@ const Guests = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedGuest, setSelectedGuest] = useState(null)
-
+const [selectedGuest, setSelectedGuest] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: ''
+  })
   const loadGuests = async () => {
     try {
       setError("")
@@ -50,7 +56,11 @@ const Guests = () => {
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Guest Management</h1>
           <p className="text-slate-600">Manage guest profiles and preferences</p>
         </div>
-        <Button variant="primary" className="sm:w-auto w-full">
+<Button 
+          variant="primary" 
+          className="sm:w-auto w-full"
+          onClick={() => setShowModal(true)}
+        >
           <ApperIcon name="UserPlus" size={18} className="mr-2" />
           Add New Guest
         </Button>
@@ -91,8 +101,8 @@ const Guests = () => {
           title={guests.length === 0 ? "No guests found" : "No matching guests"}
           description={guests.length === 0 ? "Get started by adding guest profiles" : "Try adjusting your search criteria"}
           icon="Users"
-          actionLabel={guests.length === 0 ? "Add Guest" : "Clear Search"}
-          onAction={guests.length === 0 ? () => {} : () => setSearchTerm("")}
+actionLabel={guests.length === 0 ? "Add Guest" : "Clear Search"}
+          onAction={guests.length === 0 ? () => setShowModal(true) : () => setSearchTerm("")}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -206,6 +216,95 @@ const Guests = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </Card>
+        </div>
+)}
+
+      {/* Add Guest Modal */}
+      {showModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={(e) => e.target === e.currentTarget && setShowModal(false)}
+        >
+          <Card className="w-full max-w-md bg-white">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Add New Guest</h3>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <ApperIcon name="X" size={20} />
+                </button>
+              </div>
+              
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                try {
+                  const newGuest = await guestsService.create(formData)
+                  await loadGuests()
+                  setFormData({ name: '', email: '', phone: '', address: '' })
+                  setShowModal(false)
+                  toast.success('Guest added successfully!')
+                } catch (error) {
+                  toast.error('Failed to add guest. Please try again.')
+                }
+              }}>
+                <div className="space-y-4">
+                  <FormField
+                    label="Full Name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                    placeholder="Enter guest's full name"
+                  />
+                  
+                  <FormField
+                    label="Email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                    placeholder="Enter email address"
+                  />
+                  
+                  <FormField
+                    label="Phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    required
+                    placeholder="Enter phone number"
+                  />
+                  
+                  <FormField
+                    label="Address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder="Enter address (optional)"
+                  />
+                </div>
+                
+                <div className="flex gap-3 mt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="flex-1"
+                    disabled={!formData.name || !formData.email || !formData.phone}
+                  >
+                    Add Guest
+                  </Button>
+                </div>
+              </form>
             </div>
           </Card>
         </div>
