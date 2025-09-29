@@ -15,12 +15,47 @@ const guestsService = {
     return { ...guest }
   },
 
-  async create(guestData) {
+async create(guestData) {
     await new Promise(resolve => setTimeout(resolve, 500))
     const newId = Math.max(...guestsData.map(guest => guest.Id)) + 1
     const newGuest = { ...guestData, Id: newId }
     guestsData.push(newGuest)
+
+    // Send welcome email asynchronously (non-blocking)
+    this.sendWelcomeEmail(newGuest).catch(error => {
+      console.info(`apper_info: Welcome email failed for guest ${newGuest.Id}. Error: ${error.message}`)
+    })
+
     return { ...newGuest }
+  },
+
+  async sendWelcomeEmail(guestData) {
+    try {
+      const { ApperClient } = window.ApperSDK
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      })
+
+      const result = await apperClient.functions.invoke(import.meta.env.VITE_SEND_WELCOME_EMAIL, {
+        body: JSON.stringify({
+          name: guestData.name,
+          email: guestData.email
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!result.success) {
+        console.info(`apper_info: An error was received in this function: ${import.meta.env.VITE_SEND_WELCOME_EMAIL}. The response body is: ${JSON.stringify(result)}.`)
+      }
+
+      return result
+    } catch (error) {
+      console.info(`apper_info: An error was received in this function: ${import.meta.env.VITE_SEND_WELCOME_EMAIL}. The error is: ${error.message}`)
+      throw error
+    }
   },
 
   async update(id, guestData) {

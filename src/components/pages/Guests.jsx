@@ -239,14 +239,14 @@ actionLabel={guests.length === 0 ? "Add Guest" : "Clear Search"}
                 </button>
               </div>
               
-              <form onSubmit={async (e) => {
+<form onSubmit={async (e) => {
                 e.preventDefault()
                 try {
                   const newGuest = await guestsService.create(formData)
                   await loadGuests()
                   setFormData({ name: '', email: '', phone: '', address: '' })
                   setShowModal(false)
-                  toast.success('Guest added successfully!')
+                  toast.success('Guest added successfully! Welcome email sent to ' + formData.email)
                 } catch (error) {
                   toast.error('Failed to add guest. Please try again.')
                 }
